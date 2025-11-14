@@ -1,0 +1,26 @@
+# Fichiers de secrets - NE JAMAIS PUBLIER
+.env
+config.py
+
+# Données d'exécution (générées par ton app)
+/uploaded_docs/
+/faiss_indices/
+
+# Cache Python
+__pycache__/
+*.pyc
+
+# Environnement virtuel Python
+venv/
+env/
+ai_env/
+
+# Dépendances Node.js (pour ton futur projet)
+node_modules/
+
+# Fichiers système d'OS
+.DS_Store
+Thumbs.db
+
+# Fichiers de VSCode
+.vscode/
