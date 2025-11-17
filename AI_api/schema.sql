@@ -1,7 +1,3 @@
--- ============================================================
---  AI_DOC_MANAGER  -  Schema SQL (MySQL 8+ compatible)
---  Version : FAISS externe (pas de type VECTOR)
--- ============================================================
 
 CREATE DATABASE IF NOT EXISTS ai_doc_manager
   CHARACTER SET utf8mb4
@@ -9,9 +5,6 @@ CREATE DATABASE IF NOT EXISTS ai_doc_manager
 
 USE ai_doc_manager;
 
--- ============================================================
--- 1️⃣ USERS
--- ============================================================
 CREATE TABLE IF NOT EXISTS USERS (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(255) NOT NULL UNIQUE,
@@ -19,9 +12,6 @@ CREATE TABLE IF NOT EXISTS USERS (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ============================================================
--- 2️⃣ DOCUMENTS
--- ============================================================
 CREATE TABLE IF NOT EXISTS DOCUMENTS (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT NOT NULL,
@@ -35,9 +25,6 @@ CREATE TABLE IF NOT EXISTS DOCUMENTS (
     ON DELETE CASCADE
 );
 
--- ============================================================
--- 3️⃣ DOCUMENT_CHUNKS
--- ============================================================
 CREATE TABLE IF NOT EXISTS DOCUMENT_CHUNKS (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   document_id BIGINT NOT NULL,
@@ -51,10 +38,6 @@ CREATE TABLE IF NOT EXISTS DOCUMENT_CHUNKS (
     ON DELETE CASCADE,
   KEY idx_doc_chunk (document_id, chunk_index)
 );
--- ============================================================
--- 4️⃣ FAISS_MAP (AJOUT IMPORTANT)
--- Relation entre l'index FAISS et le chunk MySQL
--- ============================================================
 CREATE TABLE IF NOT EXISTS FAISS_MAP (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT NOT NULL,
@@ -74,9 +57,6 @@ CREATE TABLE IF NOT EXISTS FAISS_MAP (
   UNIQUE KEY uq_user_faiss_id (user_id, faiss_index_id),
   KEY idx_map_chunk (chunk_id)
 );
--- ============================================================
--- 5️⃣ TAGS
--- ============================================================
 CREATE TABLE IF NOT EXISTS TAGS (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT NOT NULL,
@@ -88,9 +68,6 @@ CREATE TABLE IF NOT EXISTS TAGS (
     ON DELETE CASCADE
 );
 
--- ============================================================
--- 6️⃣ DOCUMENT_TAGS (relation n-n entre DOCUMENTS et TAGS)
--- ============================================================
 CREATE TABLE IF NOT EXISTS DOCUMENT_TAGS (
   document_id BIGINT NOT NULL,
   tag_id BIGINT NOT NULL,
@@ -104,9 +81,6 @@ CREATE TABLE IF NOT EXISTS DOCUMENT_TAGS (
     ON DELETE CASCADE
 );
 
--- ============================================================
--- 7️⃣ DOCUMENT_METADATA (clé/valeur flexible)
--- ============================================================
 CREATE TABLE IF NOT EXISTS DOCUMENT_METADATA (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   document_id BIGINT NOT NULL,
@@ -120,9 +94,6 @@ CREATE TABLE IF NOT EXISTS DOCUMENT_METADATA (
     ON DELETE CASCADE
 );
 
--- ============================================================
--- 8️⃣ SEARCHES (historique des recherches)
--- ============================================================
 CREATE TABLE IF NOT EXISTS SEARCHES (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT NOT NULL,
@@ -133,9 +104,6 @@ CREATE TABLE IF NOT EXISTS SEARCHES (
     ON DELETE CASCADE
 );
 
--- ============================================================
--- 9️⃣ SEARCH_RESULTS (résultats des recherches)
--- ============================================================
 CREATE TABLE IF NOT EXISTS SEARCH_RESULTS (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   search_id BIGINT NOT NULL,
@@ -151,18 +119,10 @@ CREATE TABLE IF NOT EXISTS SEARCH_RESULTS (
     ON DELETE CASCADE
 );
 
--- ============================================================
--- ✅ Index et contraintes additionnelles
--- ============================================================
-
--- Pour accélérer les jointures FAISS → CHUNKS
 CREATE INDEX idx_faiss_chunk_id ON FAISS_MAP(chunk_id);
 
--- Pour faciliter les recherches de documents par utilisateur
 CREATE INDEX idx_doc_user_id ON DOCUMENTS(user_id);
 
--- Pour accélérer les requêtes sur les métadonnées
 CREATE INDEX idx_meta_key ON DOCUMENT_METADATA(meta_key);
 
--- Pour faciliter l'historique de recherche
 CREATE INDEX idx_search_user ON SEARCHES(user_id);

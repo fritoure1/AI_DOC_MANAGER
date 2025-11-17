@@ -1,15 +1,130 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model DOCUMENTS {
+  id                BigInt              @id @default(autoincrement())
+  user_id           BigInt
+  file_name         String              @db.VarChar(255)
+  file_path         String              @db.Text
+  doc_type          DOCUMENTS_doc_type
+  created_at        DateTime?           @default(now()) @db.Timestamp(0)
+  last_indexed_at   DateTime?           @default(now()) @db.Timestamp(0)
+  USERS             USERS               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_docs_user")
+  DOCUMENT_CHUNKS   DOCUMENT_CHUNKS[]
+  DOCUMENT_METADATA DOCUMENT_METADATA[]
+  DOCUMENT_TAGS     DOCUMENT_TAGS[]
+
+  @@index([user_id], map: "idx_doc_user_id")
+}
+
+model DOCUMENT_CHUNKS {
+  id             BigInt           @id @default(autoincrement())
+  document_id    BigInt
+  chunk_index    Int
+  content        String           @db.MediumText
+  start_offset   Int?
+  end_offset     Int?
+  created_at     DateTime?        @default(now()) @db.Timestamp(0)
+  DOCUMENTS      DOCUMENTS        @relation(fields: [document_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_chunks_doc")
+  FAISS_MAP      FAISS_MAP[]
+  SEARCH_RESULTS SEARCH_RESULTS[]
+
+  @@index([document_id, chunk_index], map: "idx_doc_chunk")
+}
+
+model DOCUMENT_METADATA {
+  id          BigInt    @id @default(autoincrement())
+  document_id BigInt
+  meta_key    String    @db.VarChar(255)
+  meta_value  String?   @db.Text
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+  updated_at  DateTime? @default(now()) @db.Timestamp(0)
+  DOCUMENTS   DOCUMENTS @relation(fields: [document_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_meta_doc")
+
+  @@unique([document_id, meta_key], map: "uq_meta_doc")
+  @@index([meta_key], map: "idx_meta_key")
+}
+
+model DOCUMENT_TAGS {
+  document_id BigInt
+  tag_id      BigInt
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+  DOCUMENTS   DOCUMENTS @relation(fields: [document_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_dt_doc")
+  TAGS        TAGS      @relation(fields: [tag_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_dt_tag")
+
+  @@id([document_id, tag_id])
+  @@index([tag_id], map: "fk_dt_tag")
+}
+
+model FAISS_MAP {
+  id              BigInt          @id @default(autoincrement())
+  user_id         BigInt
+  faiss_index_id  BigInt
+  chunk_id        BigInt
+  created_at      DateTime?       @default(now()) @db.Timestamp(0)
+  DOCUMENT_CHUNKS DOCUMENT_CHUNKS @relation(fields: [chunk_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_map_chunk")
+  USERS           USERS           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_map_user")
+
+  @@unique([user_id, faiss_index_id], map: "uq_user_faiss_id")
+  @@index([chunk_id], map: "idx_map_chunk")
+}
+
+model SEARCHES {
+  id             BigInt           @id @default(autoincrement())
+  user_id        BigInt
+  query_text     String           @db.Text
+  created_at     DateTime?        @default(now()) @db.Timestamp(0)
+  USERS          USERS            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_search_user")
+  SEARCH_RESULTS SEARCH_RESULTS[]
+
+  @@index([user_id], map: "idx_search_user")
+}
+
+model SEARCH_RESULTS {
+  id              BigInt          @id @default(autoincrement())
+  search_id       BigInt
+  chunk_id        BigInt
+  score           Float
+  rank_pos        Int
+  created_at      DateTime?       @default(now()) @db.Timestamp(0)
+  DOCUMENT_CHUNKS DOCUMENT_CHUNKS @relation(fields: [chunk_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sr_chunk")
+  SEARCHES        SEARCHES        @relation(fields: [search_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sr_search")
+
+  @@index([chunk_id], map: "fk_sr_chunk")
+  @@index([search_id], map: "fk_sr_search")
+}
+
+model TAGS {
+  id            BigInt          @id @default(autoincrement())
+  user_id       BigInt
+  name          String          @db.VarChar(255)
+  created_at    DateTime?       @default(now()) @db.Timestamp(0)
+  DOCUMENT_TAGS DOCUMENT_TAGS[]
+  USERS         USERS           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_tags_user")
+
+  @@unique([user_id, name], map: "uq_tag_user_name")
+}
+
+model USERS {
+  id            BigInt      @id @default(autoincrement())
+  email         String      @unique(map: "email") @db.VarChar(255)
+  password_hash String      @db.VarChar(255)
+  created_at    DateTime?   @default(now()) @db.Timestamp(0)
+  DOCUMENTS     DOCUMENTS[]
+  FAISS_MAP     FAISS_MAP[]
+  SEARCHES      SEARCHES[]
+  TAGS          TAGS[]
+}
+
+enum DOCUMENTS_doc_type {
+  txt
+  pdf
+  docx
+  md
 }
