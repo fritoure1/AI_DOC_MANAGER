@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, request, jsonify
 from werkzeug.utils import secure_filename
-from app.core.extension import nlp_service, db_repo
+from app.core.extension import nlp_service, doc_repo
 from app.config import ALLOWED_EXTENSIONS, UPLOAD_FOLDER
 
 bp = Blueprint('api', __name__, url_prefix='/')
@@ -12,11 +12,8 @@ def allowed_file(filename):
 
 @bp.route('/upload', methods=['POST'])
 def upload_document():
-
     if 'file' not in request.files:
         return jsonify({"error": "Aucun fichier fourni"}), 400
-    if 'user_id' not in request.form:
-        return jsonify({"error": "user_id manquant"}), 400
     
     file = request.files['file']
     try:
@@ -30,7 +27,8 @@ def upload_document():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         
-        existing_doc = db_repo.get_document_by_name(user_id, filename)
+        existing_doc = doc_repo.get_document_by_name(user_id, filename)
+        
         if existing_doc:
             print(f"Conflit : Le fichier '{filename}' existe déjà pour l'utilisateur {user_id}.")
             return jsonify({
@@ -48,7 +46,7 @@ def upload_document():
         doc_type = filename.rsplit('.', 1)[1].lower()
 
         try:
-            document_id = db_repo.insert_doc(
+            document_id = doc_repo.insert_doc(
                 user_id=user_id,
                 file_name=filename,
                 file_path=file_path,

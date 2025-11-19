@@ -2,18 +2,24 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from app.models.database import DatabaseRepository
+from app.models.document_repo import DocumentRepository
+from app.models.search_repo import SearchRepository
+from app.models.faiss_repo import FaissRepository
 from app.core.file_loaders import LoaderFactory
 from app.services.vector_store import VectorStore
 
 class SemanticSearchService:
     def __init__(self, 
-                 db_repo: DatabaseRepository, 
+                 doc_repo: DocumentRepository,
+                 search_repo: SearchRepository,
+                 faiss_repo: FaissRepository, 
                  loader_factory: LoaderFactory,
                  vector_store: VectorStore,
                  model: SentenceTransformer): 
         
-        self.db = db_repo
+        self.doc_repo = doc_repo
+        self.search_repo = search_repo
+        self.faiss_repo = faiss_repo
         self.loader_factory = loader_factory
         self.vector_store = vector_store
         self.model = model 
@@ -28,7 +34,7 @@ class SemanticSearchService:
 
     def _ensure_mappings_loaded(self, user_id: int):
         if user_id not in self.faiss_to_chunk_map:
-            f_to_c, _ = self.db.get_mappings_for_user(user_id)
+            f_to_c, _ = self.faiss_repo.get_mappings_for_user(user_id)
             self.faiss_to_chunk_map[user_id] = f_to_c
 
     def process_and_index_document(self, user_id: int, document_id: int, file_path: str) -> dict:
@@ -41,7 +47,7 @@ class SemanticSearchService:
             return {"status": "error", "message": "Document vide ou illisible"}
 
         for key, value in metadata.items():
-            self.db.insert_metadata(document_id, key, value)
+            self.doc_repo.insert_metadata(document_id, key, value)
 
         chunks = self.text_splitter.split_text(full_text)
         print(f"Document découpé en {len(chunks)} chunks.")
@@ -54,8 +60,10 @@ class SemanticSearchService:
         self._ensure_mappings_loaded(user_id)
         
         for i, (chunk_text, faiss_id) in enumerate(zip(chunks, faiss_ids)):
-            chunk_id = self.db.create_chunk(document_id, i, chunk_text)
-            self.db.create_faiss_mapping(user_id, faiss_id, chunk_id)
+            chunk_id = self.doc_repo.create_chunk(document_id, i, chunk_text)
+            
+            self.faiss_repo.create_faiss_mapping(user_id, faiss_id, chunk_id)
+            
             self.faiss_to_chunk_map[user_id][faiss_id] = chunk_id
 
         self.vector_store.save_index(user_id)
@@ -66,7 +74,7 @@ class SemanticSearchService:
         self._ensure_mappings_loaded(user_id)
 
         try:
-            search_id = self.db.insert_search_entry(user_id, query)
+            search_id = self.search_repo.insert_search_entry(user_id, query)
         except Exception as e:
             print(f"Erreur lors de l'enregistrement de la recherche : {e}")
             search_id = None
@@ -81,7 +89,7 @@ class SemanticSearchService:
 
         chunk_ids = []
         scores = {}
-        DISTANCE_THRESHOLD = 1.2 
+        DISTANCE_THRESHOLD = 1.5 
         
         for i, faiss_idx in enumerate(faiss_indices):
             score = float(distances[i])
@@ -94,7 +102,7 @@ class SemanticSearchService:
                 chunk_ids.append(chunk_id)
                 scores[chunk_id] = score
 
-        results = self.db.get_chunks_by_ids(chunk_ids)
+        results = self.doc_repo.get_chunks_by_ids(chunk_ids)
         
         final_results = []
         for i,res in enumerate(results):
@@ -104,7 +112,7 @@ class SemanticSearchService:
             
             if search_id is not None:
                 try:
-                    self.db.insert_search_result(
+                    self.search_repo.insert_search_result(
                         search_id=search_id,
                         chunk_id=res['chunk_id'],
                         score=res_score,
