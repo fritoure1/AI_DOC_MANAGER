@@ -1,4 +1,5 @@
 import numpy as np
+import faiss  # <--- IMPORTANT : Nécessaire pour la normalisation
 from sentence_transformers import SentenceTransformer
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -52,18 +53,21 @@ class SemanticSearchService:
         chunks = self.text_splitter.split_text(full_text)
         print(f"Document découpé en {len(chunks)} chunks.")
 
+        # 1. Vectorisation
         embeddings = self.model.encode(chunks, show_progress_bar=True)
-        embeddings = np.asarray(embeddings, dtype=np.float32)
+        
+        # 2. NORMALISATION (Vital pour la similarité Cosinus)
+        # Cela met tous les vecteurs sur une longueur de 1
+        faiss.normalize_L2(embeddings)
 
+        # 3. Ajout au store
         faiss_ids = self.vector_store.add_vectors(user_id, embeddings)
 
         self._ensure_mappings_loaded(user_id)
         
         for i, (chunk_text, faiss_id) in enumerate(zip(chunks, faiss_ids)):
             chunk_id = self.doc_repo.create_chunk(document_id, i, chunk_text)
-            
             self.faiss_repo.create_faiss_mapping(user_id, faiss_id, chunk_id)
-            
             self.faiss_to_chunk_map[user_id][faiss_id] = chunk_id
 
         self.vector_store.save_index(user_id)
@@ -79,9 +83,13 @@ class SemanticSearchService:
             print(f"Erreur lors de l'enregistrement de la recherche : {e}")
             search_id = None
         
+        # 1. Vectorisation de la requête
         query_emb = self.model.encode([query])
-        query_emb = np.asarray(query_emb, dtype=np.float32)
+        
+        # 2. NORMALISATION (Aussi pour la requête !)
+        faiss.normalize_L2(query_emb)
 
+        # 3. Recherche
         distances, faiss_indices = self.vector_store.search(user_id, query_emb, k)
         
         if len(faiss_indices) == 0: 
@@ -89,12 +97,17 @@ class SemanticSearchService:
 
         chunk_ids = []
         scores = {}
-        DISTANCE_THRESHOLD = 1.5 
+        
+        # SEUIL DE SIMILARITÉ COSINUS
+        # 1.0 = Identique, 0.0 = Aucune relation
+        # On garde tout ce qui est au-dessus de 0.3 ou 0.4
+        SIMILARITY_THRESHOLD = 0.35 
         
         for i, faiss_idx in enumerate(faiss_indices):
             score = float(distances[i])
             
-            if score > DISTANCE_THRESHOLD or faiss_idx == -1: 
+            # LOGIQUE INVERSÉE : On garde si le score est SUPÉRIEUR au seuil
+            if score < SIMILARITY_THRESHOLD or faiss_idx == -1: 
                 continue
             
             chunk_id = self.faiss_to_chunk_map[user_id].get(faiss_idx)

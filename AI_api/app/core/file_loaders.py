@@ -1,40 +1,38 @@
 from abc import ABC, abstractmethod
-import fitz
+import fitz  
 from docx import Document
 import os
+from typing import Tuple, Dict, Any
 
 class DocumentLoader(ABC):
     @abstractmethod
-    def load(self, file_path: str) -> str:
+    def load(self, file_path: str) -> Tuple[str, Dict[str, Any]]:
         pass
 
 class PdfLoader(DocumentLoader):
-    def load(self, file_path:str)-> str:
-        text=""
+    def load(self, file_path: str) -> Tuple[str, Dict[str, Any]]:
+        text = ""
         metadata = {}
         try:
             with fitz.open(file_path) as doc:
                 for page in doc:
-                    text += page.get_text() +"\n"
+                    text += page.get_text() + "\n"
                 
                 meta_raw = doc.metadata
                 metadata = {
                     "title": meta_raw.get("title", ""),
                     "author": meta_raw.get("author", ""),
-                    "subject": meta_raw.get("subject", ""),
-                    "creator": meta_raw.get("creator", ""),
                     "page_count": doc.page_count,
                     "file_format": "pdf"
                 }
-
         except Exception as e:
             print(f"Erreur PDF lors de la lecture de {file_path}: {e}")
             return "", {}
         return text, metadata
 
 class DocxLoader(DocumentLoader):
-    def load(self, file_path:str)-> str:
-        text=""
+    def load(self, file_path: str) -> Tuple[str, Dict[str, Any]]:
+        text = ""
         metadata = {}
         try:
             doc = Document(file_path)
@@ -45,28 +43,26 @@ class DocxLoader(DocumentLoader):
             metadata = {
                 "author": core_props.author or "",
                 "title": core_props.title or "",
-                "created": str(core_props.created) if core_props.created else "",
                 "file_format": "docx"
             }
-
         except Exception as e:
-            print(f"Erreur python-docx lors de la lecture de {file_path}: {e}")
+            print(f"Erreur DOCX lors de la lecture de {file_path}: {e}")
             return "", {}
         return text, metadata
 
 class TxtLoader(DocumentLoader):
-    def load(self, file_path:str)-> str:
+    def load(self, file_path: str) -> Tuple[str, Dict[str, Any]]:
         text = ""
         metadata = {}
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
-                return f.read()
+                text = f.read()
+            
             stats = os.stat(file_path)
             metadata = {
                 "file_size_bytes": stats.st_size,
                 "file_format": "txt"
             }
-
         except Exception as e:
             print(f"Erreur lecture TXT de {file_path}: {e}")
             return "", {}

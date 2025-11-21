@@ -2,7 +2,7 @@ import * as authModel from '../models/auth.model.js';
 
 export const register = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, name } = req.body;
     if (!email || !password) {
       return res.status(400).json({ error: "Email et mot de passe requis." });
     }
@@ -12,8 +12,8 @@ export const register = async (req, res) => {
       return res.status(409).json({ error: "Cet email est déjà pris." });
     }
 
-    const newUser = await authModel.createUser(email, password);
-    res.status(201).json({ id: newUser.id.toString(), email: newUser.email });
+    const newUser = await authModel.createUser(email, password, name);
+    res.status(201).json({ id: newUser.id.toString(), email: newUser.email, name: newUser.name });
 
   } 
   catch (error) {
@@ -36,7 +36,7 @@ export const login = async (req, res) => {
       token: token,
       user: {
         id: user.id.toString(),
-        email: user.email
+        email: user.email, name: user.name
       }
     });
 

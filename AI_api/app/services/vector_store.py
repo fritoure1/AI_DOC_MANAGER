@@ -22,7 +22,7 @@ class VectorStore:
             index = faiss.read_index(path)
         else:
             print(f"Nouvel index FAISS user {user_id}")
-            index = faiss.IndexFlatL2(self.dimension)
+            index = faiss.IndexFlatIP(self.dimension)
         
         self.indices[user_id] = index
         return index
