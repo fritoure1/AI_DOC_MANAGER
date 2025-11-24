@@ -30,7 +30,6 @@ const HomePage = () => {
   const [loading, setLoading] = useState(false);
   const [openingId, setOpeningId] = useState<string | null>(null);
 
-  // --- 1. FONCTION INTELLIGENTE POUR LE TYPE DE FICHIER ---
   const getMimeType = (fileName: string) => {
     const extension = fileName.split('.').pop()?.toLowerCase();
     
@@ -38,34 +37,28 @@ const HomePage = () => {
       case 'pdf': return 'application/pdf';
       case 'txt': return 'text/plain;charset=utf-8';
       case 'md':  return 'text/markdown';
-      // Pour Word, c'est un type spécial
       case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
       case 'doc':  return 'application/msword';
-      default: return 'application/octet-stream'; // Type générique
+      default: return 'application/octet-stream'; 
     }
   };
 
-  // --- 2. FONCTION D'OUVERTURE ---
   const handleOpenDocument = async (docId: string, fileName: string) => {
     setOpeningId(docId);
     try {
-      // On demande le fichier binaire (blob)
       const response = await api.get(`/documents/${docId}/download`, {
         responseType: 'blob'
       });
 
-      // On détermine le bon type grâce au nom du fichier
       const mimeType = getMimeType(fileName);
       
-      // On crée le fichier en mémoire avec le bon type
       const file = new Blob([response.data], { type: mimeType });
       const fileURL = window.URL.createObjectURL(file);
 
-      // Si c'est un DOCX, on force le téléchargement (car le navigateur ne peut pas l'afficher)
       if (mimeType.includes('wordprocessingml') || mimeType.includes('msword')) {
         const link = document.createElement('a');
         link.href = fileURL;
-        link.setAttribute('download', fileName); // Force le téléchargement
+        link.setAttribute('download', fileName); 
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -77,7 +70,6 @@ const HomePage = () => {
             isClosable: true,
         });
       } else {
-        // Pour PDF et TXT, on ouvre dans un nouvel onglet
         window.open(fileURL, '_blank');
       }
 
@@ -121,7 +113,6 @@ const HomePage = () => {
     if (!query.trim()) return;
 
     setLoading(true);
-    // setResults([]); // Optionnel pour éviter le clignotement
 
     try {
       const response = await api.get(`/search?q=${encodeURIComponent(query)}`);
@@ -183,12 +174,10 @@ const HomePage = () => {
                     </VStack>
                   </HStack>
 
-                  {/* BOUTON OUVRIR */}
                   <Button 
                     size="sm" 
                     colorScheme="blue" 
                     variant="solid"
-                    // On passe le nom du fichier pour deviner l'extension
                     onClick={() => handleOpenDocument(group.document_id, group.file_name)}
                     isLoading={openingId === group.document_id}
                   >

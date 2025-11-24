@@ -18,10 +18,9 @@ interface DocumentData {
 const DocumentsPage = () => {
   const [docs, setDocs] = useState<DocumentData[]>([]);
   const [openingId, setOpeningId] = useState<string | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null); // État pour le chargement de suppression
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const toast = useToast();
 
-  // 1. Chargement
   useEffect(() => {
     const fetchDocs = async () => {
       try {
@@ -35,7 +34,6 @@ const DocumentsPage = () => {
     fetchDocs();
   }, [toast]);
 
-  // 2. Logique d'ouverture (MIME Types)
   const getMimeType = (fileName: string) => {
     const extension = fileName.split('.').pop()?.toLowerCase();
     switch (extension) {
@@ -84,7 +82,6 @@ const DocumentsPage = () => {
     }
   };
 
-  // 3. Logique de Suppression (Réintégrée !)
   const handleDelete = async (docId: string) => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer ce document ?")) return;
 
@@ -92,7 +89,6 @@ const DocumentsPage = () => {
     try {
       await api.delete(`/documents/${docId}`);
       
-      // On retire le document de la liste visuelle immédiatement
       setDocs(prevDocs => prevDocs.filter(d => d.id !== docId));
       
       toast({
@@ -148,7 +144,6 @@ const DocumentsPage = () => {
 
               <CardFooter pt={4} display="flex" flexDirection="column" gap={3}>
                 
-                {/* Groupe de boutons : Ouvrir + Supprimer */}
                 <HStack width="full" spacing={2}>
                     <Button 
                       size="sm" 

@@ -31,7 +31,6 @@ const HistoryPage = () => {
     <Box p={8} maxWidth="900px" margin="0 auto">
       <Heading mb={8}>Historique de Recherche</Heading>
 
-      {/* SÉCURITÉ : On vérifie que 'history' est bien un tableau */}
       {Array.isArray(history) && history.length > 0 ? (
         <Accordion allowMultiple>
           {history.map((item) => (

@@ -3,7 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Link as RouterLink } from 'react-router-dom';
 import { Link } from '@chakra-ui/react';
-// On importe les briques Lego
 import { 
   Box, Button, Input, Heading, VStack, Text, useToast, Container 
 } from '@chakra-ui/react';
@@ -37,7 +36,6 @@ const LoginPage = () => {
   };
 
   return (
-    // Container centre tout et limite la largeur
     <Container centerContent h="100vh" justifyContent="center">
       <Box 
         p={8} 

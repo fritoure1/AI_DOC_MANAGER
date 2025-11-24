@@ -2,16 +2,15 @@ import { HashRouter as Router, Routes, Route, Navigate, Outlet } from 'react-rou
 import { ChakraProvider } from '@chakra-ui/react';
 import theme from './theme';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import Navbar from './components/Navbar'; // Import Navbar
+import Navbar from './components/Navbar'; 
 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import HomePage from './pages/HomePage';
-import UploadPage from './pages/UploadPage'; // Import Upload
-import HistoryPage from './pages/HistoryPage'; // Import History
+import UploadPage from './pages/UploadPage'; 
+import HistoryPage from './pages/HistoryPage';
 import DocumentsPage from './pages/DocumentsPage';
 
-// Layout protégé : Ajoute la Navbar automatiquement
 const ProtectedLayout = () => {
   const { isAuthenticated } = useAuth();
   
@@ -22,7 +21,6 @@ const ProtectedLayout = () => {
   return (
     <>
       <Navbar />
-      {/* Outlet affiche le contenu de la page actuelle */}
       <Outlet />
     </>
   );

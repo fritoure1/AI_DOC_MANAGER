@@ -21,7 +21,6 @@ const UploadPage = () => {
     formData.append('file', file);
 
     try {
-      // Appel à l'API Node.js (qui fera le proxy vers Python)
       await api.post('/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -35,7 +34,7 @@ const UploadPage = () => {
         duration: 5000,
         isClosable: true,
       });
-      setFile(null); // Reset
+      setFile(null);
       
     } catch (error) {
       console.error(error);

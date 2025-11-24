@@ -4,7 +4,6 @@ import {
   Box, Button, Input, Heading, VStack, Text, useToast, Container, Link 
 } from '@chakra-ui/react';
 import api from '../services/api';
-// 1. IMPORT AJOUTÉ
 import { useAuth } from '../context/AuthContext'; 
 
 const RegisterPage = () => {
@@ -16,7 +15,6 @@ const RegisterPage = () => {
   const navigate = useNavigate();
   const toast = useToast();
   
-  // 2. RÉCUPÉRATION DE LA FONCTION LOGIN
   const { login } = useAuth(); 
 
   const handleSubmit = async () => {
@@ -33,7 +31,6 @@ const RegisterPage = () => {
 
     setLoading(true);
     try {
-      // Étape A : Création du compte (API)
       await api.post('/auth/register', {
         name,
         email,
@@ -48,11 +45,8 @@ const RegisterPage = () => {
         isClosable: true,
       });
 
-      // Étape B : Connexion automatique (AuthContext)
-      // On utilise les mêmes infos pour connecter l'utilisateur tout de suite
       await login(email, password);
 
-      // Étape C : Redirection vers l'accueil (au lieu de /login)
       navigate('/');
 
     } catch (err: any) {

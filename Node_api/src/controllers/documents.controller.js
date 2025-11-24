@@ -73,7 +73,7 @@ export const getDocumentFile = async (req, res) => {
       return res.status(404).json({ error: "Fichier physique introuvable." });
     }
 
-    res.setHeader('Content-Type', 'application/pdf'); // Ou dynamique si vous voulez
+    res.setHeader('Content-Type', 'application/pdf'); 
     res.download(absolutePath, doc.file_name);
 
   } catch (error) {
