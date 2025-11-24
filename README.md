@@ -16,7 +16,7 @@ Ce projet utilise une architecture **Microservices** distribuée en 3 parties di
 
 ---
 
-## 🛠️ 1. Prérequis (À installer sur le PC vierge)
+## 🛠️ 1. Prérequis
 
 Avant de commencer, assurez-vous d'avoir installé ces logiciels sur votre machine :
 
@@ -60,7 +60,7 @@ Clonez ce dépôt sur votre machine, puis ouvrez un terminal à la racine du pro
     ```
 4.  Installez les dépendances :
     ```bash
-    pip install -r requirements.txt
+    pip install -r app/requirements.txt
     ```
     *(Cela peut prendre quelques minutes car il télécharge les modèles d'IA).*
 

@@ -83,7 +83,7 @@ const RegisterPage = () => {
           <Box>
             <Text mb={2} color="gray.300">Nom complet</Text>
             <Input 
-              placeholder="Abdel Elfassi" 
+              placeholder="Name" 
               value={name}
               onChange={(e) => setName(e.target.value)} 
               bg="gray.700" border="none" color="white"
@@ -94,7 +94,7 @@ const RegisterPage = () => {
             <Text mb={2} color="gray.300">Email</Text>
             <Input 
               type="email" 
-              placeholder="test@exemple.com" 
+              placeholder="test@example.com" 
               value={email}
               onChange={(e) => setEmail(e.target.value)} 
               bg="gray.700" border="none" color="white"
