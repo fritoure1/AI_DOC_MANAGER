@@ -18,8 +18,10 @@ interface DocumentData {
 const DocumentsPage = () => {
   const [docs, setDocs] = useState<DocumentData[]>([]);
   const [openingId, setOpeningId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null); // État pour le chargement de suppression
   const toast = useToast();
 
+  // 1. Chargement
   useEffect(() => {
     const fetchDocs = async () => {
       try {
@@ -27,46 +29,84 @@ const DocumentsPage = () => {
         setDocs(res.data);
       } catch (err) {
         console.error("Erreur chargement documents:", err);
+        toast({ status: 'error', title: "Erreur chargement documents" });
       }
     };
     fetchDocs();
-  }, []);
+  }, [toast]);
 
-  // 1. Petit utilitaire pour deviner le type MIME
-  const getMimeType = (docType: string) => {
-    switch (docType.toLowerCase()) {
+  // 2. Logique d'ouverture (MIME Types)
+  const getMimeType = (fileName: string) => {
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    switch (extension) {
       case 'pdf': return 'application/pdf';
-      case 'txt': return 'text/plain';
-      case 'md': return 'text/markdown';
+      case 'txt': return 'text/plain;charset=utf-8';
+      case 'md':  return 'text/markdown;charset=utf-8';
       case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-      default: return 'application/octet-stream'; // Type générique
+      case 'doc':  return 'application/msword';
+      default: return 'application/octet-stream';
     }
   };
 
-  // 2. La fonction prend maintenant le docType en argument
-  const handleOpenDocument = async (docId: string, docType: string) => {
+  const handleOpenDocument = async (docId: string, fileName: string) => {
     setOpeningId(docId);
     try {
       const response = await api.get(`/documents/${docId}/download`, {
         responseType: 'blob'
       });
 
-      // 3. On utilise le type dynamique ici !
-      const mimeType = getMimeType(docType);
-      const fileURL = window.URL.createObjectURL(new Blob([response.data], { type: mimeType }));
+      const mimeType = getMimeType(fileName);
+      const file = new Blob([response.data], { type: mimeType });
+      const fileURL = window.URL.createObjectURL(file);
 
-      window.open(fileURL, '_blank');
+      if (mimeType.includes('wordprocessingml') || mimeType.includes('msword')) {
+        const link = document.createElement('a');
+        link.href = fileURL;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        toast({
+          title: "Téléchargement lancé",
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+        });
+      } else {
+        window.open(fileURL, '_blank');
+      }
 
     } catch (error) {
-      console.error("Erreur ouverture document:", error);
+      console.error("Erreur ouverture:", error);
+      toast({ title: "Impossible d'ouvrir le fichier", status: "error" });
+    } finally {
+      setOpeningId(null);
+    }
+  };
+
+  // 3. Logique de Suppression (Réintégrée !)
+  const handleDelete = async (docId: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer ce document ?")) return;
+
+    setDeletingId(docId);
+    try {
+      await api.delete(`/documents/${docId}`);
+      
+      // On retire le document de la liste visuelle immédiatement
+      setDocs(prevDocs => prevDocs.filter(d => d.id !== docId));
+      
       toast({
-        title: "Impossible d'ouvrir le fichier",
-        status: "error",
+        title: "Document supprimé",
+        status: "info",
         duration: 3000,
         isClosable: true,
       });
+
+    } catch (error) {
+      console.error(error);
+      toast({ title: "Erreur lors de la suppression", status: "error" });
     } finally {
-      setOpeningId(null);
+      setDeletingId(null);
     }
   };
 
@@ -84,7 +124,7 @@ const DocumentsPage = () => {
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
         {Array.isArray(docs) && docs.length > 0 ? (
           docs.map((doc) => (
-            <Card key={doc.id} bg="gray.800" borderColor="gray.700" borderWidth={1} _hover={{ borderColor: "gray.500" }}>
+            <Card key={doc.id} bg="gray.800" borderColor="gray.700" borderWidth={1}>
               
               <CardHeader pb={2}>
                 <HStack justify="space-between">
@@ -102,23 +142,36 @@ const DocumentsPage = () => {
                   {doc.file_name}
                 </Heading>
                 <Text fontSize="sm" color="gray.400" mt={2}>
-                  {doc._count ? `${doc._count.DOCUMENT_CHUNKS} fragments indexés` : 'Non indexé'}
+                  {doc._count ? `${doc._count.DOCUMENT_CHUNKS} fragments` : 'Non indexé'}
                 </Text>
               </CardBody>
 
               <CardFooter pt={4} display="flex" flexDirection="column" gap={3}>
                 
-                <Button 
-                  size="sm" 
-                  colorScheme="blue" 
-                  variant="outline" 
-                  width="full"
-                  isLoading={openingId === doc.id}
-                  // 4. On passe le doc.doc_type à la fonction
-                  onClick={() => handleOpenDocument(doc.id, doc.doc_type)}
-                >
-                  Ouvrir le fichier 📄
-                </Button>
+                {/* Groupe de boutons : Ouvrir + Supprimer */}
+                <HStack width="full" spacing={2}>
+                    <Button 
+                      size="sm" 
+                      colorScheme="blue" 
+                      variant="outline" 
+                      width="full"
+                      isLoading={openingId === doc.id}
+                      onClick={() => handleOpenDocument(doc.id, doc.file_name)}
+                    >
+                      Ouvrir
+                    </Button>
+
+                    <Button 
+                      size="sm" 
+                      colorScheme="red" 
+                      variant="ghost"
+                      isLoading={deletingId === doc.id}
+                      onClick={() => handleDelete(doc.id)}
+                      title="Supprimer le document"
+                    >
+                      🗑️
+                    </Button>
+                </HStack>
 
                 <Box width="full">
                   <Text fontSize="xs" fontWeight="bold" color="gray.500" mb={1}>TAGS :</Text>

@@ -37,7 +37,7 @@ const Navbar = () => {
 
         <HStack>
           <Button size="sm" colorScheme="red" variant="outline" onClick={handleLogout}>
-            Déconnexion ({user?.email})
+            Déconnexion ({user?.name})
           </Button>
         </HStack>
       </Flex>

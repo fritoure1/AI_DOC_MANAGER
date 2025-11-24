@@ -36,7 +36,7 @@ const HomePage = () => {
     
     switch (extension) {
       case 'pdf': return 'application/pdf';
-      case 'txt': return 'text/plain';
+      case 'txt': return 'text/plain;charset=utf-8';
       case 'md':  return 'text/markdown';
       // Pour Word, c'est un type spécial
       case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
