@@ -103,7 +103,7 @@ Clonez ce dépôt sur votre machine, puis ouvrez un terminal à la racine du pro
     Créez un fichier `.env` à l'intérieur du dossier `Node_api` et collez-y ceci :
     ```env
     # Adaptez avec votre mot de passe MySQL
-    DATABASE_URL="mysql://root:fritoure@127.0.0.1:3306/ai_doc_manager"
+    DATABASE_URL="mysql://USER:MOT_DE_PASSE@127.0.0.1:3306/ai_doc_manager"
     
     # Mettez une phrase longue et aléatoire ici
     JWT_SECRET="votre_secret_super_securise_et_long_pour_jwt_12345"
