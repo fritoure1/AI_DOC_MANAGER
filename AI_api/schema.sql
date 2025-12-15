@@ -126,4 +126,27 @@ CREATE TABLE IF NOT EXISTS SEARCH_RESULTS (
     ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS AUDIT_LOGS (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    action_name VARCHAR(50),
+    details TEXT,
+    occurred_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DELIMITER //
+
+CREATE TRIGGER after_document_insert
+AFTER INSERT ON DOCUMENTS
+FOR EACH ROW
+BEGIN
+    INSERT INTO AUDIT_LOGS (action_name, details)
+    VALUES (
+        'NOUVEAU_DOCUMENT', 
+        CONCAT('Document ajouté : ', NEW.file_name, ' (ID: ', NEW.id, ') pour l''utilisateur ', NEW.user_id)
+    );
+END;
+//
+
+DELIMITER ;
+
 CREATE INDEX idx_meta_key ON DOCUMENT_METADATA(meta_key);

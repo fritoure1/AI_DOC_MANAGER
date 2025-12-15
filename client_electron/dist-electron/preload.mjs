@@ -1,22 +1,31 @@
 "use strict";
 const electron = require("electron");
-electron.contextBridge.exposeInMainWorld("ipcRenderer", {
-  on(...args) {
-    const [channel, listener] = args;
-    return electron.ipcRenderer.on(channel, (event, ...args2) => listener(event, ...args2));
+electron.contextBridge.exposeInMainWorld("electronAPI", {
+  files: {
+    getPath: (file) => electron.webUtils.getPathForFile(file),
+    open: (filePath) => electron.ipcRenderer.invoke("files:open", filePath)
   },
-  off(...args) {
-    const [channel, ...omit] = args;
-    return electron.ipcRenderer.off(channel, ...omit);
+  auth: {
+    login: (data) => electron.ipcRenderer.invoke("auth:login", data),
+    register: (data) => electron.ipcRenderer.invoke("auth:register", data)
   },
-  send(...args) {
-    const [channel, ...omit] = args;
-    return electron.ipcRenderer.send(channel, ...omit);
+  documents: {
+    getAll: (userId) => electron.ipcRenderer.invoke("documents:getAll", userId),
+    delete: (id, userId) => electron.ipcRenderer.invoke("documents:delete", { id, userId }),
+    getFile: (id, userId) => electron.ipcRenderer.invoke("documents:getFile", { id, userId })
   },
-  invoke(...args) {
-    const [channel, ...omit] = args;
-    return electron.ipcRenderer.invoke(channel, ...omit);
+  upload: {
+    uploadFile: (filePath, userId) => electron.ipcRenderer.invoke("upload:file", { filePath, userId })
+  },
+  search: {
+    query: (q, userId) => electron.ipcRenderer.invoke("search:query", { q, userId })
+  },
+  history: {
+    get: (userId) => electron.ipcRenderer.invoke("history:get", userId)
+  },
+  tags: {
+    getAll: (userId) => electron.ipcRenderer.invoke("tags:getAll", userId),
+    create: (data) => electron.ipcRenderer.invoke("tags:create", data),
+    link: (data) => electron.ipcRenderer.invoke("tags:link", data)
   }
-  // You can expose other APTs you need here.
-  // ...
 });

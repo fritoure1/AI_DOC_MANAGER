@@ -13,11 +13,21 @@
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@langchain/textsplitters": "^1.0.1",
+    "@prisma/client": "^6.19.0",
+    "@types/bcryptjs": "^2.4.6",
     "axios": "^1.13.2",
+    "bcryptjs": "^3.0.3",
+    "form-data": "^4.0.5",
     "framer-motion": "^6.5.1",
+    "langchain": "^1.1.1",
+    "mammoth": "^1.11.0",
+    "pdf-parse": "^2.4.5",
+    "prisma": "^6.19.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^7.9.6"
+    "react-router-dom": "^7.9.6",
+    "unpdf": "^1.4.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.64",

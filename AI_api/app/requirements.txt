@@ -2,10 +2,5 @@ flask
 flask-cors
 sentence-transformers
 faiss-cpu
-langchain
-langchain-text-splitters
-unstructured[local-inference]
-pypdf
 python-docx
 sqlalchemy
-pymysql

@@ -1,26 +1,42 @@
-# Fichiers de secrets - NE JAMAIS PUBLIER
+# =========================
+# AI / FAISS indices
+# =========================
+ai_api/faiss_indices/
+ai_api/faiss_indices/**
+AI_api/app/config.py
+# =========================
+# Uploaded documents (Electron client)
+# =========================
+client_electron/uploaded_docs/
+client_electron/uploaded_docs/**
+# =========================
+# Environnements & secrets
+# =========================
 .env
-config.py
+.env.*
+*.key
 
-# Données d'exécution (générées par ton app)
-/uploaded_docs/
-/faiss_indices/
+# =========================
+# Node / Electron
+# =========================
+node_modules/
+dist/
+build/
+out/
 
-# Cache Python
+# =========================
+# Python
+# =========================
 __pycache__/
 *.pyc
-
-# Environnement virtuel Python
+*.pyo
+*.pyd
+.venv/
 venv/
-env/
-ai_env/
 
-# Dépendances Node.js (pour ton futur projet)
-node_modules/
-
-# Fichiers système d'OS
+# =========================
+# OS / IDE
+# =========================
 .DS_Store
-Thumbs.db
-
-# Fichiers de VSCode
+.idea/
 .vscode/

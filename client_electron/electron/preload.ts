@@ -1,24 +1,31 @@
-import { ipcRenderer, contextBridge } from 'electron'
+import { ipcRenderer, contextBridge, webUtils } from 'electron'
 
-// --------- Expose some API to the Renderer process ---------
-contextBridge.exposeInMainWorld('ipcRenderer', {
-  on(...args: Parameters<typeof ipcRenderer.on>) {
-    const [channel, listener] = args
-    return ipcRenderer.on(channel, (event, ...args) => listener(event, ...args))
+contextBridge.exposeInMainWorld('electronAPI', {
+  files: {
+    getPath: (file: File) => webUtils.getPathForFile(file),
+    open: (filePath: string) => ipcRenderer.invoke('files:open', filePath)
   },
-  off(...args: Parameters<typeof ipcRenderer.off>) {
-    const [channel, ...omit] = args
-    return ipcRenderer.off(channel, ...omit)
+  auth: {
+    login: (data: any) => ipcRenderer.invoke('auth:login', data),
+    register: (data: any) => ipcRenderer.invoke('auth:register', data),
   },
-  send(...args: Parameters<typeof ipcRenderer.send>) {
-    const [channel, ...omit] = args
-    return ipcRenderer.send(channel, ...omit)
+  documents: {
+    getAll: (userId: number) => ipcRenderer.invoke('documents:getAll', userId),
+    delete: (id: number, userId: number) => ipcRenderer.invoke('documents:delete', { id, userId }),
+    getFile: (id: number, userId: number) => ipcRenderer.invoke('documents:getFile', { id, userId }),
   },
-  invoke(...args: Parameters<typeof ipcRenderer.invoke>) {
-    const [channel, ...omit] = args
-    return ipcRenderer.invoke(channel, ...omit)
+  upload: {
+    uploadFile: (filePath: string, userId: number) => ipcRenderer.invoke('upload:file', { filePath, userId }),
   },
-
-  // You can expose other APTs you need here.
-  // ...
+  search: {
+    query: (q: string, userId: number) => ipcRenderer.invoke('search:query', { q, userId }),
+  },
+  history: {
+    get: (userId: number) => ipcRenderer.invoke('history:get', userId),
+  },
+  tags: {
+    getAll: (userId: number) => ipcRenderer.invoke('tags:getAll', userId),
+    create: (data: any) => ipcRenderer.invoke('tags:create', data),
+    link: (data: any) => ipcRenderer.invoke('tags:link', data),
+  }
 })

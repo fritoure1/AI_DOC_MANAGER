@@ -1,75 +1,28 @@
-import os
 from flask import Blueprint, request, jsonify
-from werkzeug.utils import secure_filename
-from app.core.extension import nlp_service, doc_repo
-from app.config import ALLOWED_EXTENSIONS, UPLOAD_FOLDER
+from app.core.extension import nlp_service
 
 bp = Blueprint('api', __name__, url_prefix='/')
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-@bp.route('/upload', methods=['POST'])
-def upload_document():
-    if 'file' not in request.files:
-        return jsonify({"error": "Aucun fichier fourni"}), 400
+@bp.route('/vectorize', methods=['POST'])
+def vectorize_endpoint():
+    data = request.get_json()
     
-    file = request.files['file']
+    user_id = data.get('user_id')
+    chunks = data.get('chunks') # Liste de dicts {id, text}
+    
+    if not user_id or not chunks:
+        return jsonify({"error": "Données manquantes"}), 400
+
     try:
-        user_id = int(request.form['user_id'])
-    except ValueError:
-        return jsonify({"error": "user_id doit être un entier"}), 400
+        # Appel au service
+        result = nlp_service.vectorize_chunks(int(user_id), chunks)
+        return jsonify(result), 200
 
-    if file.filename == '':
-        return jsonify({"error": "Nom de fichier vide"}), 400
+    except Exception as e:
+        print(f"Erreur vectorize: {e}")
+        return jsonify({"error": str(e)}), 500
 
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        
-        existing_doc = doc_repo.get_document_by_name(user_id, filename)
-        
-        if existing_doc:
-            print(f"Conflit : Le fichier '{filename}' existe déjà pour l'utilisateur {user_id}.")
-            return jsonify({
-                "status": "error",
-                "message": f"Un fichier nommé '{filename}' existe déjà (ID: {existing_doc['id']})."
-            }), 409
-
-        user_upload_dir = os.path.join(UPLOAD_FOLDER, str(user_id))
-        os.makedirs(user_upload_dir, exist_ok=True)
-        
-        file_path = os.path.join(user_upload_dir, filename)
-        file.save(file_path)
-        print(f"Fichier sauvegardé : {file_path}")
-
-        doc_type = filename.rsplit('.', 1)[1].lower()
-
-        try:
-            document_id = doc_repo.insert_doc(
-                user_id=user_id,
-                file_name=filename,
-                file_path=file_path,
-                doc_type=doc_type
-            )
-            
-            result = nlp_service.process_and_index_document(
-                user_id=user_id,
-                document_id=document_id,
-                file_path=file_path
-            )
-
-            if result.get("status") == "error":
-                return jsonify(result), 400
-            
-            return jsonify(result), 201
-
-        except Exception as e:
-            print(f"Erreur upload: {e}")
-            return jsonify({"error": str(e)}), 500
-    
-    return jsonify({"error": "Fichier non autorisé"}), 400
-
+# --- 2. ROUTE DE RECHERCHE (INCHANGÉE) ---
 @bp.route('/search', methods=['GET'])
 def search_documents():
     query = request.args.get('q')
@@ -83,4 +36,5 @@ def search_documents():
         results = nlp_service.search(user_id, query, k=10)
         return jsonify(results), 200
     except Exception as e:
+        print(f"Erreur API search: {e}")
         return jsonify({"error": str(e)}), 500
