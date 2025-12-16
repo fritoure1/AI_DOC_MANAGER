@@ -3,7 +3,7 @@ import {
   Box, Heading, SimpleGrid, Card, CardHeader, CardBody, CardFooter, 
   Text, Badge, HStack, Button, useToast 
 } from '@chakra-ui/react';
-import { useAuth } from '../context/AuthContext'; // <-- Import nécessaire
+import { useAuth } from '../context/AuthContext'; 
 
 interface DocumentData {
   id: string;
@@ -18,16 +18,15 @@ interface DocumentData {
 const DocumentsPage = () => {
   const [docs, setDocs] = useState<DocumentData[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [openingId, setOpeningId] = useState<string | null>(null); // <-- Manquait dans votre code
+  const [openingId, setOpeningId] = useState<string | null>(null); 
   
   const toast = useToast();
-  const { user } = useAuth(); // <-- On récupère l'user
+  const { user } = useAuth(); 
 
   useEffect(() => {
     const fetchDocs = async () => {
       if (!user) return;
       try {
-        // Appel IPC getAll
         const data = await window.electronAPI.documents.getAll(parseInt(user.id));
         setDocs(data);
       } catch (err) {
@@ -43,14 +42,10 @@ const DocumentsPage = () => {
     setOpeningId(docId);
 
     try {
-        // 1. On récupère le chemin (comme avant)
         const path = await window.electronAPI.documents.getFile(parseInt(docId), parseInt(user.id));
         
-        // 2. 👇 REMPLACEMENT : On demande à Electron d'ouvrir ce chemin
         await window.electronAPI.files.open(path);
         
-        // Optionnel : petit toast de succès (ou rien, car le fichier s'ouvre)
-        // toast({ status: 'success', title: "Fichier ouvert", duration: 1000 });
 
     } catch (error: any) {
         console.error(error);
@@ -67,12 +62,10 @@ const DocumentsPage = () => {
   const handleDelete = async (docId: string) => {
     if (!user || !confirm("Êtes-vous sûr de vouloir supprimer ce document ?")) return;
 
-    setDeletingId(docId); // Active le loading spinner poubelle
+    setDeletingId(docId); 
     try {
-      // Appel IPC delete
       await window.electronAPI.documents.delete(parseInt(docId), parseInt(user.id));
       
-      // Mise à jour locale de la liste
       setDocs(prev => prev.filter(d => d.id !== docId));
       
       toast({ status: "info", title: "Document supprimé" });

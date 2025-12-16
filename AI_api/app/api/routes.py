@@ -8,13 +8,12 @@ def vectorize_endpoint():
     data = request.get_json()
     
     user_id = data.get('user_id')
-    chunks = data.get('chunks') # Liste de dicts {id, text}
+    chunks = data.get('chunks') 
     
     if not user_id or not chunks:
         return jsonify({"error": "Données manquantes"}), 400
 
     try:
-        # Appel au service
         result = nlp_service.vectorize_chunks(int(user_id), chunks)
         return jsonify(result), 200
 
@@ -22,7 +21,6 @@ def vectorize_endpoint():
         print(f"Erreur vectorize: {e}")
         return jsonify({"error": str(e)}), 500
 
-# --- 2. ROUTE DE RECHERCHE (INCHANGÉE) ---
 @bp.route('/search', methods=['GET'])
 def search_documents():
     query = request.args.get('q')

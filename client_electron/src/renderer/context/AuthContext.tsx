@@ -1,6 +1,5 @@
 import { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
-// On définit l'interface User
 interface User {
     id: string;
     email: string;

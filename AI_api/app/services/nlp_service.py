@@ -23,22 +23,17 @@ class SemanticSearchService:
         """
         print(f"Vectorisation de {len(chunks_with_ids)} chunks pour user {user_id}")
 
-        # 1. Extraire juste les textes pour le modèle
         texts = [item['text'] for item in chunks_with_ids]
         chunk_db_ids = [item['id'] for item in chunks_with_ids]
 
-        # 2. Calcul Embedding
         embeddings = self.model.encode(texts, show_progress_bar=True)
         faiss.normalize_L2(embeddings)
 
-        # 3. Ajout FAISS
-        # add_vectors retourne les IDs internes de FAISS (ex: 0, 1, 2...)
+       
         faiss_ids = self.vector_store.add_vectors(user_id, embeddings)
 
         self._ensure_mappings_loaded(user_id)
         
-        # 4. Sauvegarder le mapping (FAISS ID <-> MySQL Chunk ID)
-        # Python ne fait plus d'INSERT dans DOCUMENTS, juste dans FAISS_MAP
         for db_id, faiss_id in zip(chunk_db_ids, faiss_ids):
             self.faiss_repo.create_faiss_mapping(user_id, faiss_id, db_id)
             self.faiss_to_chunk_map[user_id][faiss_id] = db_id

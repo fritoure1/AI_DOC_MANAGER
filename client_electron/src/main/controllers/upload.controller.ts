@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import * as fileParser from '../services/file.parser';
 import * as textSplitter from '../services/text.splitter';
-import * as docModel from '../models/documents.model'; // On utilise les nouvelles fonctions
+import * as docModel from '../models/documents.model'; 
 
 const PYTHON_API_URL = 'http://127.0.0.1:5001';
 

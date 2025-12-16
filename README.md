@@ -1,38 +1,48 @@
-🧠 AI Doc Manager
-AI Doc Manager est une application de bureau intelligente permettant de stocker, gérer et rechercher sémantiquement dans des documents locaux (PDF, DOCX, TXT).
+## 🧠 AI Doc Manager
 
+AI Doc Manager est une application de bureau intelligente permettant de stocker, gérer et rechercher sémantiquement dans des documents locaux (PDF, DOCX, TXT).
 Contrairement à une recherche classique par mots-clés, cette application utilise l'Intelligence Artificielle (Embeddings + Vector Search) pour comprendre le sens de votre question.
 
-🏗️ Architecture du Projet
+---
+
+### 🏗️ Architecture du Projet
 Ce projet a évolué vers une architecture optimisée en 2 parties :
 
-Application Electron (TypeScript/React/Node.js) :
+#### Application Electron (TypeScript/React/Node.js) :
 
-Frontend : Interface utilisateur en React.
+- Frontend : Interface utilisateur en React.
 
-Backend (Main Process) : Gère la logique métier, la base de données (MySQL + Prisma) et les fichiers locaux.
+- Backend (Main Process) : Gère la logique métier, la base de données (MySQL + Prisma) et les fichiers locaux.
 
-Microservice IA (Python) :
+#### Microservice IA (Python) :
 
-API Flask légère.
+- API Flask légère.
 
-Gère uniquement la vectorisation (Embeddings) et l'indexation FAISS.
+- Gère uniquement la vectorisation (Embeddings) et l'indexation FAISS.
 
-🛠️ 1. Prérequis
+---
+
+### 🛠️ 1. Prérequis
+
 Avant de commencer, assurez-vous d'avoir installé ces logiciels sur votre machine :
 
-Node.js (v18 ou supérieur) : nodejs.org
+- Node.js (v18 ou supérieur) : nodejs.org
 
-Python (v3.10 ou supérieur) : python.org
+- Python (v3.10 ou supérieur) : python.org
 
-MySQL Server : dev.mysql.com
+- MySQL Server : dev.mysql.com
 
-Git : git-scm.com
+- Git : git-scm.com
 
-🚀 2. Installation & Configuration
+---
+
+### 🚀 2. Installation & Configuration
+
 Clonez ce dépôt sur votre machine. Vous aurez deux dossiers principaux (par exemple python_service et electron_app).
 
-Étape A : Préparer la Base de Données
+---
+
+#### Étape A : Préparer la Base de Données
 
 Ouvrez votre client MySQL (Workbench, DBeaver ou ligne de commande).
 
@@ -44,7 +54,7 @@ CREATE DATABASE ai_doc_manager;
 
 (Les tables seront créées automatiquement par Prisma plus tard).
 
-Étape B : Installer le Service IA (Python)
+#### Étape B : Installer le Service IA (Python)
 
 Ouvrez un terminal et allez dans le dossier du service Python (ex: AI_api) :
 
@@ -75,7 +85,7 @@ pip install -r app/requirements.txt
 Avant de lancer le projet, vous devez configurer la connexion à la base de données pour le backend et le frontend.
 
 ### 1. Backend (AI API)
-Créez ou modifiez le fichier `ai_api/app/config.py` et renseignez vos informations de base de données :
+Créez le fichier `ai_api/app/config.py` et renseignez vos informations de base de données :
 
 ```python
 import os
@@ -109,7 +119,7 @@ Créez un fichier .env à la racine du dossier client/ et ajoutez la ligne suiva
 DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DB_NAME"
 ```
 
-Étape C : Installer l'Application Electron (Main + Renderer)
+#### Étape C : Installer l'Application Electron (Main + Renderer)
 
 Ouvrez un nouveau terminal et allez dans le dossier de l'application :
 
@@ -131,7 +141,8 @@ npx prisma generate
 npx prisma db push
 ```
 
-▶️ 3. Lancer l'Application
+### ▶️ 3. Lancer l'Application
+
 Vous devez avoir 2 terminaux ouverts en parallèle.
 
 Terminal 1 : Le Moteur IA (Python)

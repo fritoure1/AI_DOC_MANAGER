@@ -25,17 +25,14 @@ const RegisterPage = () => {
 
     setLoading(true);
     try {
-      // 👇 REMPLACEMENT : Appel IPC
       await window.electronAPI.auth.register({ name, email, password });
 
       toast({ status: "success", title: "Compte créé !", description: "Connexion..." });
 
-      // On connecte direct
       await login(email, password);
       navigate('/');
 
     } catch (err: any) {
-      // Les erreurs IPC arrivent souvent sous forme d'objet Error avec un message
       const message = err.message || "Erreur inconnue";
       toast({ status: "error", title: "Erreur", description: message });
     } finally {
@@ -43,7 +40,6 @@ const RegisterPage = () => {
     }
   };
 
-  // ... (Le reste du JSX, return (...), reste identique à votre fichier original)
   return (
     <Container centerContent h="100vh" justifyContent="center">
       <Box p={8} maxWidth="400px" borderWidth={1} borderRadius={8} boxShadow="lg" bg="gray.800" w="100%">

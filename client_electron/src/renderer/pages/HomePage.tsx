@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-// Plus d'import API
 import { 
   Box, Input, Button, VStack, HStack, Text, Card, CardBody, 
   Badge, Spinner, Heading, useToast, CardHeader, Divider 
@@ -35,14 +34,10 @@ const HomePage = () => {
     setOpeningId(docId);
 
     try {
-        // 1. On récupère le chemin (comme avant)
         const path = await window.electronAPI.documents.getFile(parseInt(docId), parseInt(user.id));
         
-        // 2. 👇 REMPLACEMENT : On demande à Electron d'ouvrir ce chemin
         await window.electronAPI.files.open(path);
         
-        // Optionnel : petit toast de succès (ou rien, car le fichier s'ouvre)
-        // toast({ status: 'success', title: "Fichier ouvert", duration: 1000 });
 
     } catch (error: any) {
         console.error(error);
@@ -84,8 +79,6 @@ const HomePage = () => {
     setLoading(true);
 
     try {
-      // 👇 REMPLACEMENT : Appel IPC search:query
-      // Note : Le back retourne directement le tableau de résultats
       const data = await window.electronAPI.search.query(query, parseInt(user.id));
       
       if (Array.isArray(data)) {
@@ -149,7 +142,6 @@ const HomePage = () => {
                     size="sm" 
                     colorScheme="blue" 
                     variant="solid"
-                    // On passe juste l'ID maintenant, plus besoin du fileName pour le blob
                     onClick={() => handleOpenDocument(group.document_id)}
                     isLoading={openingId === group.document_id}
                   >

@@ -20,10 +20,8 @@ export const parseFile = async (
 
   try {
     if (ext === '.pdf') {
-      // Charger le PDF via unpdf
       const pdf = await getDocumentProxy(new Uint8Array(buffer));
 
-      // Extraire le texte (toutes les pages fusionnées en une string)
       const { totalPages, text: extracted } = await extractText(pdf, {
         mergePages: true,
       });
@@ -31,7 +29,6 @@ export const parseFile = async (
       text = Array.isArray(extracted) ? extracted.join('\n') : extracted;
       metadata.page_count = totalPages;
 
-      // (Optionnel) récupérer les métadatas du PDF
       try {
         const { info, metadata: meta } = await getMeta(pdf);
         metadata = { ...metadata, ...info, ...meta };

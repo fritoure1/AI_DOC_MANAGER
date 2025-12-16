@@ -3,7 +3,7 @@ import {
   Box, VStack, Text, Card, CardBody, Heading, Badge, Accordion, 
   AccordionItem, AccordionButton, AccordionPanel, AccordionIcon 
 } from '@chakra-ui/react';
-import { useAuth } from '../context/AuthContext'; // <-- Import nécessaire
+import { useAuth } from '../context/AuthContext';
 
 interface HistoryItem {
   id: string;
@@ -14,13 +14,12 @@ interface HistoryItem {
 
 const HistoryPage = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const { user } = useAuth(); // <-- On récupère l'user connecté
+  const { user } = useAuth(); 
 
   useEffect(() => {
     const fetchHistory = async () => {
       if (!user) return;
       try {
-        // Appel via IPC
         const data = await window.electronAPI.history.get(parseInt(user.id));
         setHistory(data);
       } catch (err) {
