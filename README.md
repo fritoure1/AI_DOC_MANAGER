@@ -75,7 +75,7 @@ pip install -r app/requirements.txt
 Avant de lancer le projet, vous devez configurer la connexion à la base de données pour le backend et le frontend.
 
 ### 1. Backend (AI API)
-Créez ou modifiez le fichier `ai_api/config.py` et renseignez vos informations de base de données :
+Créez ou modifiez le fichier `ai_api/app/config.py` et renseignez vos informations de base de données :
 
 ```python
 import os
@@ -121,13 +121,6 @@ Installez les dépendances :
 
 ```Bash
 npm install
-```
-
-Configuration (Critique) : Créez un fichier .env à la racine de client_electron :
-
-```Extrait de code
-# Connexion BDD
-DATABASE_URL="mysql://USER:MOT_DE_PASSE@127.0.0.1:3306/ai_doc_manager"
 ```
 
 Initialisez la base de données avec Prisma :
