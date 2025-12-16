@@ -67,15 +67,46 @@ source ai_env/bin/activate
 Installez les dépendances :
 
 ```Bash
-pip install -r requirements.txt
+pip install -r app/requirements.txt
 ```
 
-Configuration : Créez un fichier .env ou config.py (selon votre code) pour définir les dossiers de stockage :
+## ⚙️ Configuration
 
-```Python
-# Exemple de config nécessaire
-UPLOAD_FOLDER = '../client_electron/uploaded_docs'  # Doit pointer vers le dossier de stockage d'Electron
-FAISS_INDEX_DIR = 'faiss_indices'
+Avant de lancer le projet, vous devez configurer la connexion à la base de données pour le backend et le frontend.
+
+### 1. Backend (AI API)
+Créez ou modifiez le fichier `ai_api/config.py` et renseignez vos informations de base de données :
+
+```python
+import os
+
+# Configuration de la Base de Données
+DB_USER = ""      # Votre utilisateur MySQL (ex: root)
+DB_PASS = ""      # Votre mot de passe
+DB_HOST = ""      # Adresse de l'hôte (ex: 127.0.0.1)
+DB_PORT = 3306    # Port (défaut: 3306)
+DB_NAME = ""      # Nom de la base de données (ex: ai_doc_manager)
+
+# URI de connexion générée automatiquement
+DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+# Configuration IA et Dossiers
+MODEL_NAME = 'paraphrase-multilingual-mpnet-base-v2'
+FAISS_INDEX_DIR = "AI_api/faiss_indices"
+UPLOAD_FOLDER = 'uploaded_docs'
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'docx', 'md'}
+
+# Création automatique des dossiers nécessaires
+os.makedirs(FAISS_INDEX_DIR, exist_ok=True)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+```
+
+### 2. Client (Electron/Prisma)
+
+Créez un fichier .env à la racine du dossier client/ et ajoutez la ligne suivante en remplaçant les valeurs par les vôtres :
+
+```Bash
+DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DB_NAME"
 ```
 
 Étape C : Installer l'Application Electron (Main + Renderer)
